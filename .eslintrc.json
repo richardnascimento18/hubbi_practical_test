@@ -1,3 +1,4 @@
+// eslint config
 {
   "extends": ["next/core-web-vitals", "next/typescript"]
 }
