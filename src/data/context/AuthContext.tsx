@@ -1,68 +1,70 @@
-import firebase from "@/firebase/config";
-import User from "@/model/User";
-import router from "next/router";
-import { createContext, useEffect, useState } from "react";
-import Cookies from "js-cookie";
+import { createContext, useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import Cookies from 'js-cookie';
+import Image from 'next/image';
+import loadingGif from '../../../public/images/loading.gif';
+interface User {
+  id: string;
+  email: string;
+}
 
 interface AuthContextProps {
-  user?: User
-  loading?: boolean
-  loginGoogle?: () => Promise<void>
-  login?: (userEmail: string, userPassword: string) => Promise<void>
-  signup?: (userEmail: string, userPassword: string) => Promise<void>
-  logOut?: () => Promise<void>
+  user?: User;
+  loading?: boolean;
+  login?: (email: string, password: string) => Promise<void>;
+  signup?: (email: string, password: string) => Promise<void>;
+  logOut?: () => void;
+  loadUserFromCookies?: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextProps>({});
 
-async function treatedUserObject(firebaseUser: firebase.User): Promise<User> {
-  const token = await firebaseUser.getIdToken();
-  return {
-    uid: firebaseUser.uid,
-    name: firebaseUser.displayName,
-    email: firebaseUser.email,
-    token,
-    provider: firebaseUser.providerData[0]?.providerId,
-    imageURL: firebaseUser.photoURL
-  }
-}
-
-function manageCookie(isLoggedIn: boolean) {
-  if(isLoggedIn) {
-    Cookies.set("admin-template-auth", isLoggedIn, {
-      expires: 7
+function manageCookie(isLoggedIn: boolean, token?: String | null) {
+  if (isLoggedIn) {
+    Cookies.set('admin-template-auth', token, {
+      expires: 7,
     });
   } else {
-    Cookies.remove("admin-template-auth");
+    Cookies.remove('admin-template-auth');
   }
 }
 
 export function AuthProvider(props: any) {
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<User>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const router = useRouter();
 
-  async function configureSession(firebaseUser) {
-    if(firebaseUser?.email) {
-      const finalUser = await treatedUserObject(firebaseUser);
-      setUser(finalUser);
-      manageCookie(true);
-      setLoading(false);
-      return finalUser.email;
+  async function configureSession(user: User | null, token: String | null) {
+    if (user && token) {
+      setUser(user);
+      manageCookie(true, token);
     } else {
       setUser(null);
       manageCookie(false);
-      setLoading(false);
-      return false;
     }
+    setLoading(false);
   }
 
   async function signup(userEmail: string, userPassword: string) {
     try {
       setLoading(true);
-      const response = await firebase.auth().createUserWithEmailAndPassword(userEmail, userPassword);
-  
-      await configureSession(response.user);
-      router.push("/");
+
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userEmail, password: userPassword }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          JSON.stringify({
+            error: { message: errorData.error || 'Cadastro falhou!' },
+          }),
+        );
+      }
+
+      router.push('/authentication');
     } finally {
       setLoading(false);
     }
@@ -71,59 +73,83 @@ export function AuthProvider(props: any) {
   async function login(userEmail: string, userPassword: string) {
     try {
       setLoading(true);
-      const response = await firebase.auth().signInWithEmailAndPassword(userEmail, userPassword);
-  
-      await configureSession(response.user);
-      router.push("/");
+
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userEmail, password: userPassword }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(JSON.stringify(errorData));
+      }
+
+      const { token, user } = await response.json();
+      await configureSession(user, token);
+      router.push('/');
     } finally {
       setLoading(false);
     }
   }
 
-  async function loginGoogle() {
-    try {
-      setLoading(true);
-      const response = await firebase.auth().signInWithPopup(
-        new firebase.auth.GoogleAuthProvider()
-      )
-  
-      await configureSession(response.user);
-      router.push("/");
-    } finally {
-      setLoading(false);
+  async function loadUserFromCookies() {
+    const token = Cookies.get('admin-template-auth');
+    if (token) {
+      try {
+        const response = await fetch('/api/auth/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const { valid, user } = await response.json();
+          if (valid) {
+            setUser(user);
+          }
+        } else {
+          Cookies.remove('admin-template-auth');
+          router.push('/authentication');
+        }
+      } catch (error) {
+        Cookies.remove('admin-template-auth');
+        router.push('/authentication');
+      }
+    } else if (!token) {
+      router.push('/authentication');
     }
+
+    setLoading(false);
+    return true;
   }
 
-  async function logOut() {
-    try {
-      setLoading(true);
-      await firebase.auth().signOut();
-      await configureSession(null);
-    } finally {
-      setLoading(false);
-    }
+  function logOut() {
+    Cookies.remove('admin-template-auth');
+    setUser(null);
+    router.push('/authentication');
   }
 
   useEffect(() => {
-    if(Cookies.get("admin-template-auth")){
-      const cancel = firebase.auth().onIdTokenChanged(configureSession);
-      return () => cancel();
-    } else {
-      setLoading(false);
-    }
-  }, [])
+    loadUserFromCookies();
+  }, []);
+
+  function loadingScreen() {
+    return (
+      <div className="flex justify-center items-center h-screen bg-gray-400/20 absolute w-screen">
+        <Image src={loadingGif} alt="Loading Gif" width={100} height={100} />
+      </div>
+    );
+  }
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      loading,
-      signup,
-      login,
-      loginGoogle,
-      logOut
-    }}>
+    <AuthContext.Provider
+      value={{ user, loading, signup, login, logOut, loadUserFromCookies }}
+    >
+      {loading && loadingScreen()}
       {props.children}
     </AuthContext.Provider>
-  )
+  );
 }
+
 export default AuthContext;

@@ -1,45 +1,16 @@
-import Head from "next/head";
-import Image from "next/image";
-import loadingGif from '../../../public/images/loading.gif';
-import useAuth from "@/data/hook/useAuth";
-import router from "next/router";
+import useAuth from '@/data/hook/useAuth';
+import { useEffect } from 'react';
 
 export default function ForceAuth(props) {
-  const { user, loading } = useAuth();
+  const { loadUserFromCookies } = useAuth();
 
   function renderContent() {
-    return (
-      <>
-        <Head>
-          <script dangerouslySetInnerHTML={{
-            __html:`
-              if(!document.cookie?.includes("admin-template-auth")) {
-                window.location.href = "/authentication"
-              }
-            `
-          }} />
-        </Head>
-        {props.children}
-      </>
-    )
+    return <>{props.children}</>;
   }
 
-  function renderLoading() {
-    return (
-      <div className={`
-        flex justify-center items-center h-screen
-      `}>
-        <Image src={loadingGif} alt="Loading Gif" />
-      </div>
-    )
-  }
+  useEffect(() => {
+    loadUserFromCookies();
+  }, []);
 
-  if(!loading && user?.email) {
-    return renderContent();
-  } else if(loading) {
-    return renderLoading();
-  } else {
-    router.push("/authentication");
-    return null;
-  }
+  return renderContent();
 }

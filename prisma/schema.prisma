@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // Replace with your PostgreSQL connection string
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Sale {
+  id          Int        @id @default(autoincrement())
+  price       Float
+  products    SaleProduct[]
+  purchase    Purchase    @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  purchaseId  Int         @unique
+  date        DateTime
+}
+
+model Purchase {
+  id          Int            @id @default(autoincrement())
+  price       Float
+  products    PurchaseProduct[]
+  sales       Sale[]
+  date        DateTime
+}
+
+model Product {
+  id          Int                @id @default(autoincrement())
+  price       Float
+  sales       SaleProduct[]
+  purchases   PurchaseProduct[]
+}
+
+model SaleProduct {
+  id          Int        @id @default(autoincrement())
+  sale        Sale       @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  saleId      Int
+  product     Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId   Int
+}
+
+model PurchaseProduct {
+  id          Int        @id @default(autoincrement())
+  purchase    Purchase   @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  purchaseId  Int
+  product     Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId   Int
+}
