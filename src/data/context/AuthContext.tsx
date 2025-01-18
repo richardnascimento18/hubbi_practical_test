@@ -130,10 +130,6 @@ export function AuthProvider(props: any) {
     router.push('/authentication');
   }
 
-  useEffect(() => {
-    loadUserFromCookies();
-  }, []);
-
   function loadingScreen() {
     return (
       <div className="flex justify-center items-center h-screen bg-gray-400/20 absolute w-screen">
@@ -141,6 +137,10 @@ export function AuthProvider(props: any) {
       </div>
     );
   }
+
+  useEffect(() => {
+    loadUserFromCookies();
+  }, []);
 
   return (
     <AuthContext.Provider

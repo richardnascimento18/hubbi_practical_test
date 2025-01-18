@@ -13,7 +13,7 @@ export default async function handler(
     if (!token) {
       return res
         .status(401)
-        .json({ valid: false, message: 'Token not provided' });
+        .json({ valid: false, error: { message: 'Token não provido' } });
     }
 
     try {
@@ -22,12 +22,18 @@ export default async function handler(
     } catch (error) {
       return res
         .status(401)
-        .json({ valid: false, message: 'Invalid or expired token' });
+        .json({
+          valid: false,
+          error: { message: 'Token invalido ou expirado' },
+        });
     }
   } else {
     res.setHeader('Allow', ['GET']);
     return res
       .status(405)
-      .json({ message: `Method ${req.method} Not Allowed` });
+      .json({
+        error: { message: `Método ${req.method} Não Permitido` },
+        __link: [{ POST: 'Confirma se token é válido e retorna o usuário' }],
+      });
   }
 }
