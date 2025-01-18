@@ -18,7 +18,9 @@ export default async function handler(
       });
       res.status(200).json(newUser);
     } catch (error) {
-      res.status(500).json({ error: 'Não foi possível criar o usuário' });
+      res
+        .status(500)
+        .json({ error: { message: 'Não foi possível criar o usuário' } });
     }
   } else {
     res.setHeader('Allow', ['POST']);
