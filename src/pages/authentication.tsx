@@ -1,5 +1,5 @@
 import AuthInput from '@/components/auth/AuthInput';
-import { WarningIcon } from '@/components/icons';
+import ChakraAlert from '@/components/template/Alert';
 import useAuth from '@/data/hook/useAuth';
 import { useState } from 'react';
 
@@ -50,12 +50,7 @@ export default function Authentication() {
         </h1>
 
         {error && (
-          <div
-            className={`flex items-center bg-orange-400 text-white py-3 px-5 my-2 border-2 border-orange-900 rounded-lg`}
-          >
-            {WarningIcon}
-            <span className="ml-2">{error}</span>
-          </div>
+          <ChakraAlert title="Error During Processing:" message={error} />
         )}
 
         <AuthInput
@@ -75,7 +70,7 @@ export default function Authentication() {
 
         <button
           onClick={submit}
-          className={`w-full bg-indigo-500 hover:bg-indigo-400 text-white rounded-lg px-4 py-3 mt-6`}
+          className={`w-full bg-indigo-500 hover:bg-indigo-400 text-white rounded-lg px-4 py-3 mt-6 cursor-pointer`}
         >
           {mode === 'login' ? 'Log in' : 'Sign up'}
         </button>
