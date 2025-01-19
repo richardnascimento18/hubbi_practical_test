@@ -8,6 +8,9 @@ export default {
     './src/**/**/*.{js,ts,jsx,tsx,mdx}', // all folders and files inside src
   ],
   darkMode: 'class',
+  corePlugins: {
+    preflight: false,
+  },
   theme: {
     extend: {
       colors: {
