@@ -6,7 +6,7 @@ import MenuItem from './MenuItem';
 export default function SideMenu() {
   const { logOut } = useAuth();
   return (
-    <aside className="flex flex-col dark:bg-gray-900 bg-gray-200 text-gray-700">
+    <aside className="flex flex-col bg-indigo-800 drop-shadow-xl">
       <div className="flex flex-col items-center justify-center h-20 w-20 bg-gradient-to-r from-indigo-500 to-purple-800">
         <Logo />
       </div>

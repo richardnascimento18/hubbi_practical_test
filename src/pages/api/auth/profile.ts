@@ -20,20 +20,16 @@ export default async function handler(
       const decoded = jwt.verify(token, JWT_SECRET);
       return res.status(200).json({ valid: true, user: decoded });
     } catch (error) {
-      return res
-        .status(401)
-        .json({
-          valid: false,
-          error: { message: 'Token invalido ou expirado' },
-        });
+      return res.status(401).json({
+        valid: false,
+        error: { message: 'Token invalido ou expirado' },
+      });
     }
   } else {
     res.setHeader('Allow', ['GET']);
-    return res
-      .status(405)
-      .json({
-        error: { message: `Método ${req.method} Não Permitido` },
-        __link: [{ POST: 'Confirma se token é válido e retorna o usuário' }],
-      });
+    return res.status(405).json({
+      error: { message: `Método ${req.method} Não Permitido` },
+      __link: [{ GET: 'Confirma se token é válido e retorna o usuário' }],
+    });
   }
 }
