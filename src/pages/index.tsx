@@ -24,7 +24,7 @@ export default function Home() {
           formLegend="Formulário de nova venda."
           helperText="Preencha este formulário para adicionar uma nova venda."
         >
-          <ChakraNewItemForm></ChakraNewItemForm>
+          <ChakraNewItemForm tableType="Venda"></ChakraNewItemForm>
         </ChakraFieldSet>
       </ChakraPopOver>
     </Layout>

@@ -4,7 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL") // Replace with your PostgreSQL connection string
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -15,42 +15,45 @@ model User {
   updatedAt DateTime @updatedAt
 }
 
-model Sale {
-  id          Int        @id @default(autoincrement())
-  price       Float
-  products    SaleProduct[]
-  purchase    Purchase    @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
-  purchaseId  Int         @unique
-  date        DateTime
+model Purchase {
+  id        String              @id @default(cuid())
+  price     Int
+  date      DateTime
+  products  PurchaseProduct[]
+  sales     Sale[]
 }
 
-model Purchase {
-  id          Int            @id @default(autoincrement())
-  price       Float
-  products    PurchaseProduct[]
-  sales       Sale[]
-  date        DateTime
+model Sale {
+  id        String              @id @default(cuid())
+  price     Int
+  date      DateTime
+  products  SaleProduct[]     
+  purchase  Purchase?           @relation(fields: [purchaseId], references: [id], onDelete: SetNull)
+  purchaseId String?
 }
 
 model Product {
-  id          Int                @id @default(autoincrement())
-  price       Float
-  sales       SaleProduct[]
-  purchases   PurchaseProduct[]
-}
-
-model SaleProduct {
-  id          Int        @id @default(autoincrement())
-  sale        Sale       @relation(fields: [saleId], references: [id], onDelete: Cascade)
-  saleId      Int
-  product     Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId   Int
+  id       String               @id @default(cuid())
+  name     String
+  price    Int
+  purchases PurchaseProduct[] 
+  sales    SaleProduct[]        
 }
 
 model PurchaseProduct {
-  id          Int        @id @default(autoincrement())
-  purchase    Purchase   @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
-  purchaseId  Int
-  product     Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId   Int
+  purchase   Purchase @relation(fields: [purchaseId], references: [id], onDelete: Cascade)
+  purchaseId String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  String
+  quantity   Int
+  @@id([purchaseId, productId])
+}
+
+model SaleProduct {
+  sale       Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  saleId     String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  String
+  quantity   Int
+  @@id([saleId, productId])
 }

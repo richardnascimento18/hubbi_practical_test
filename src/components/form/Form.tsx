@@ -20,14 +20,6 @@ export default function ChakraFieldSet(props: ChakraFieldSetProps) {
       <Fieldset.ErrorText>
         Algumas áreas estão invalidas. Por favor, cheque-as.
       </Fieldset.ErrorText>
-
-      <Button
-        type="submit"
-        alignSelf="flex-start"
-        className="bg-green-400 hover:bg-green-500 hover:text-gray-700 transition-colors text-black"
-      >
-        Enviar Formulário
-      </Button>
     </Fieldset.Root>
   );
 }
