@@ -24,7 +24,7 @@ export default function Notifications() {
           formLegend="Formulário de nova compra."
           helperText="Preencha este formulário para adicionar uma nova compra."
         >
-          <ChakraNewItemForm></ChakraNewItemForm>
+          <ChakraNewItemForm tableType="Compra"></ChakraNewItemForm>
         </ChakraFieldSet>
       </ChakraPopOver>
     </Layout>
