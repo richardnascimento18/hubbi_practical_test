@@ -25,7 +25,7 @@ Este projeto é um sistema desenvolvido para gerenciar e acompanhar o andamento 
 
 3. Configure as variáveis de ambiente:
 
-   > **Crie um arquivo .env na raiz do projeto.**
+   > **Crie um arquivo .env na raiz do projeto.** > _DATABASE_URL_ e _JWT_SECRET_
 
 4. Configure as informações de conexão com o banco de dados PostgreSQL.
    _Execute as migrações do banco de dados:_
